@@ -132,3 +132,4 @@ dmypy.json
 output_2019_q1.parquet
 output_2019_q1.zip
 *.DS_Store
+dspg22_pyarrow/*
