@@ -39,7 +39,16 @@ if __name__ == '__main__':
     df = append_divide_column(df, num_files, div_col_name)
     table = pa.Table.from_pandas(df)
     print('Writing dataset')
-    ds.write_dataset(table, "savedir", format="parquet",
-                     partitioning=ds.partitioning(
-                         pa.schema([table.schema.field(div_col_name)])
-                     ))
+    # ds.write_dataset(table, "savedir", format="parquet",
+    #                  partitioning=ds.partitioning(
+    #                      pa.schema([table.schema.field(div_col_name)])
+    #                  ))
+    dataset_name = 'ookla_dataset'
+    pq.write_to_dataset(table, root_path=dataset_name,
+                        partition_cols=[div_col_name])
+
+    print('Dataset written: %s' % (os.path.isdir(dataset_name)))
+    dataset = pq.ParquetDataset(dataset_name)
+    table = dataset.read()
+    print(table)
+    print('Test complete')
