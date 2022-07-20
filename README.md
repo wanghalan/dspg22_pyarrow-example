@@ -15,8 +15,6 @@ options:
   -s SIZE, --size SIZE  Maximum size of the partitioned file in MB
   -o OUTPUT, --output OUTPUT
   -v, --verbose, --no-verbose
-(dspg22_pyarrow) loremipsum@Lorems-MacBook-Pro dspg22_pyarrow-example % 
-
 ```
 
 Example
