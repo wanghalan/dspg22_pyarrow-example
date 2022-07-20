@@ -6,6 +6,8 @@ import itertools
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.dataset as ds
+import logging
+import argparse
 
 
 def calculate_number_of_files(large_file_path, file_size_limit=50):
@@ -24,31 +26,53 @@ def append_divide_column(df, num_files, div_col_name='_tmp-divide'):
     return df
 
 
+def get_dataset(dir_name):
+    dataset = pq.ParquetDataset(dir_name)
+    table = dataset.read()
+    logging.info(table)
+
+
+def size_limit(x):
+    x = int(x)
+    if x <= 0:
+        raise argparse.ArgumentTypeError("Minimum filesize is 1 MB")
+    return x
+
+
 if __name__ == '__main__':
     '''
     Given a large file, find the number of files it needs to be divided into, and then evenly distribute those files into partitioning
     '''
-    large_file_path = 'output_2019_q1.parquet'
+    parser = argparse.ArgumentParser(
+        description='Take a file and divide it into partitions of specific sizes')
+    parser.add_argument('-i', '--input', type=str,
+                        help='The large file to be partitioned', required=True)
+    parser.add_argument('-s', '--size', type=size_limit, default=50,
+                        help='Maximum size of the partitioned file in MB')
+    parser.add_argument('-o', '--output', type=str, required=True)
+    parser.add_argument('-v', '--verbose',
+                        action=argparse.BooleanOptionalAction)
+    args = parser.parse_args()
+    log_level = logging.INFO
+    if args.verbose:
+        log_level = logging.DEBUG
+
+    logging.basicConfig(
+        format='%(levelname)s: %(message)s', level=log_level)
+
+    # large_file_path = 'output_2019_q1.parquet'
+    large_file_path = args.input
     num_files = calculate_number_of_files(large_file_path)
-    print('Number of files to divide into: %s' % num_files)
-    print('Reading table')
+    logging.info('Number of files to divide into: %s' % num_files)
+    logging.info('Reading table')
     table = pq.read_table(large_file_path)
     df = table.to_pandas()
     div_col_name = '_tmp-divide'
-    print('Appending divide column')
+    logging.info('Appending divide column')
     df = append_divide_column(df, num_files, div_col_name)
     table = pa.Table.from_pandas(df)
-    print('Writing dataset')
-    # ds.write_dataset(table, "savedir", format="parquet",
-    #                  partitioning=ds.partitioning(
-    #                      pa.schema([table.schema.field(div_col_name)])
-    #                  ))
-    dataset_name = 'ookla_dataset'
-    pq.write_to_dataset(table, root_path=dataset_name,
+    logging.info('Writing dataset')
+    pq.write_to_dataset(table, root_path=args.output,
                         partition_cols=[div_col_name])
 
-    print('Dataset written: %s' % (os.path.isdir(dataset_name)))
-    dataset = pq.ParquetDataset(dataset_name)
-    table = dataset.read()
-    print(table)
-    print('Test complete')
+    logging.info('Dataset written: %s' % (os.path.isdir(args.output)))
