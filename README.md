@@ -29,3 +29,7 @@ References
 - [What is Parquet](https://databricks.com/glossary/what-is-parquet)
 - [PyArrow documentation](https://arrow.apache.org/docs/python/install.html)
 - [Notes](https://www.overleaf.com/read/zqkmnghsffpc)
+
+Acknowledgement
+---
+This project was built as part of the 2022 [Data Science for the Public Good (DSPG) internship program](https://biocomplexity.virginia.edu/data-science-public-good-internship-program)
